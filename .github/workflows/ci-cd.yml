@@ -34,12 +34,13 @@ jobs:
                 
     publish:
         needs: build-and-test
-        environment: test
+        environment: production
 
         runs-on: ubuntu-latest
         permissions:
             id-token: write
             contents: read
+            
         steps:
             - name: login to azure
               uses: azure/login@v2
