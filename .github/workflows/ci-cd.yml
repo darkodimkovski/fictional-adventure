@@ -1,5 +1,9 @@
 name: CI-CD workflow
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
     push:
         branches:
@@ -32,18 +36,25 @@ jobs:
         needs: build-and-test
 
         runs-on: ubuntu-latest
-
+        permissions:
+            id-token: write
+            contents: read
         steps:
+            - name: login to azure
+              uses: azure/login@v2
+              with:
+                client-id: ${{ vars.AZURE_CLIENT_ID }}
+                tenant-id: ${{ vars.AZURE_TENANT_ID }}
+                subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
             - name: Download build artifact
               uses: actions/download-artifact@v4
               with:
                 name: deployment-artifact
                 path: out/
 
-            - name: Publish to Azure Web App
-              uses: azure/webapps-deploy@v2
+            - name: deploy to azure web app
+              uses: azure/webapps-deploy@v3
               with:
                 app-name: next
-                publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
                 package: out/
-            
