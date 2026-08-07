@@ -41,16 +41,8 @@ jobs:
             id-token: write
             contents: read
         steps:
-            - name: login to azure
-              uses: azure/login@v2
-              with:
-                client-id: ${{ vars.AZURE_CLIENT_ID }}
-                tenant-id: ${{ vars.AZURE_TENANT_ID }}
-                subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-                
-
-            - name: Download build artifact
-              uses: actions/download-artifact@v4
+            - uses: actions/checkout@v3
+            - uses: azure/login@v3
               with:
                 name: deployment-artifact
                 path: out/
