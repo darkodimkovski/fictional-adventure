@@ -43,5 +43,5 @@ jobs:
               with:
                     context: .
                     push: true
-                    tags: acrddi/fictional-adventure:latest
+                    tags: acrddi.azurecr.io/fictional-adventure:latest
                   
