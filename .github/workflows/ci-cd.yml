@@ -25,6 +25,8 @@ jobs:
             - run: npm test
 
     build-and-push-docker-image:
+        needs: build-and-test
+        if: github.ref == 'refs/heads/main'
         permissions:
             id-token: write
             contents: read
