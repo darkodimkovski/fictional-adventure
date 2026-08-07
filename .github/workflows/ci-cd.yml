@@ -1,54 +1,47 @@
-name: CI-CD workflow
-
-permissions:
-  id-token: write
-  contents: read
-
+name: CI/CD Pipeline
 on:
     push:
         branches:
             - main
-            - develop
-    pull_request: 
-        branches: 
+    pull_request:
+        branches:
             - main
+
 jobs:
     build-and-test:
-        runs-on: ubuntu-latest
-
+        strategy:
+            matrix:
+                os: [ubuntu-latest, windows-latest]
+        runs-on: ${{ matrix.os }}
         steps:
-            - name: Checkout code
-              uses: actions/checkout@v3
-            - name: Setup Node.js
-              uses: actions/setup-node@v7
+            - uses: actions/checkout@v3
+            - name: Set up Node.js
+              uses: actions/setup-node@v3
               with:
-                node-version: latest
+                  node-version: '18'
             - run: npm ci
             - run: npm run build
             - run: npm test
-            - name: Upload build artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: deployment-artifact
-                path: out/
-                
-    publish:
-        needs: build-and-test
-        environment: test
 
-        runs-on: ubuntu-latest
+    build-and-push-docker-image:
         permissions:
             id-token: write
             contents: read
+        environment: production
+        runs-on:
+            - ubuntu-latest
         steps:
             - uses: actions/checkout@v3
-            - uses: azure/login@v3
+            - uses: azure/login@v2
               with:
-                name: deployment-artifact
-                path: out/
-
-            - name: deploy to azure web app
-              uses: azure/webapps-deploy@v3
+                  client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            - name: Login to ACR
+              run: az acr login --name acrddi
+            - uses: docker/build-push-action@v4
               with:
-                app-name: next
-                package: out/
+                    context: .
+                    push: true
+                    tags: acrddi/fictional-adventure:latest
+                  
